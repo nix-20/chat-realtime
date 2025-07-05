@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat privata con Firebase</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; }
+    #inputMsg { width: 80%; padding: 10px; }
+    #sendBtn { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Chat privata</h1>
+  <div id="messages"></div>
+  <input id="inputMsg" type="text" placeholder="Scrivi un messaggio..." />
+  <button id="sendBtn">Invia</button>
+
+  <!-- Firebase App -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <!-- Firebase Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Metti qui la tua configurazione Firebase
+    const firebaseConfig = {
+      apiKey: "TUO_API_KEY",
+      authDomain: "TUO_AUTH_DOMAIN",
+      databaseURL: "https://TUO_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "TUO_PROJECT_ID",
+      storageBucket: "TUO_STORAGE_BUCKET",
+      messagingSenderId: "TUO_SENDER_ID",
+      appId: "TUO_APP_ID"
+    };
+
+    // Inizializza Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    const db = firebase.database();
+
+    const chatRoomId = 'chat1'; // stanza di chat
+
+    const messagesDiv = document.getElementById('messages');
+    const inputMsg = document.getElementById('inputMsg');
+    const sendBtn = document.getElementById('sendBtn');
+
+    function showMessage(msg) {
+      const div = document.createElement('div');
+      div.textContent = msg;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    db.ref('chats/' + chatRoomId).on('child_added', snapshot => {
+      const data = snapshot.val();
+      showMessage(data.sender + ': ' + data.text);
+    });
+
+    sendBtn.addEventListener('click', () => {
+      const text = inputMsg.value.trim();
+      if (text === '') return;
+
+      const sender = prompt("Come ti chiami?") || "Anonimo";
+
+      db.ref('chats/' + chatRoomId).push({
+        sender: sender,
+        text: text,
+        timestamp: Date.now()
+      });
+
+      inputMsg.value = '';
+    });
+
+  </script>
+</body>
+</html>
